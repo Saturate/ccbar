@@ -1,0 +1,29 @@
+# ccbar configuration
+# https://github.com/Saturate/ccbar
+
+[[lines]]
+blocks = ["dir", "git-branch", "git-status"]
+
+[[lines]]
+blocks = ["model", "context-bar", "tokens", "cost", "duration", "rate-limit"]
+
+[separator]
+char = " │ "
+style = "dim"
+
+[blocks.context-bar]
+width = 12
+thresholds = [50, 75, 90]
+
+[blocks.cost]
+warn = 1.0
+crit = 5.0
+
+[blocks.rate-limit]
+show_countdown = true
+show_bar = true
+bar_width = 8
+
+[blocks.dir]
+segments = 0
+abbreviate_home = true
