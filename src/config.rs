@@ -45,6 +45,7 @@ pub struct BlockConfig {
     pub bar_width: Option<usize>,
     pub segments: Option<usize>,
     pub abbreviate_home: Option<bool>,
+    pub format: Option<String>,
 }
 
 fn default_lines() -> Vec<Line> {
@@ -53,7 +54,6 @@ fn default_lines() -> Vec<Line> {
             blocks: vec![
                 "dir".into(),
                 "git-branch".into(),
-                "git-status".into(),
             ],
         },
         Line {
@@ -128,7 +128,7 @@ pub const DEFAULT_TOML: &str = r#"# ccbar configuration
 # https://github.com/Saturate/ccbar
 
 [[lines]]
-blocks = ["dir", "git-branch", "git-status"]
+blocks = ["dir", "git-branch"]
 
 [[lines]]
 blocks = ["model", "context-bar", "tokens", "cost", "duration", "rate-limit"]

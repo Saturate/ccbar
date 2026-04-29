@@ -56,6 +56,7 @@ pub fn progress_bar(pct: u64, width: usize) -> String {
     for _ in 0..filled {
         bar.push('━');
     }
+    bar.push_str(RST);
     bar.push_str(DIM);
     for _ in 0..empty {
         bar.push('┄');
@@ -76,10 +77,17 @@ pub fn fmt_tokens(t: u64) -> String {
 
 pub fn fmt_duration(ms: u64) -> String {
     let s = ms / 1000;
-    if s >= 3600 {
+    if s >= 86400 {
+        let d = s / 86400;
+        let h = (s % 86400) / 3600;
+        let m = (s % 3600) / 60;
+        let rem = s % 60;
+        format!("{d}d{h}h{m}m{rem}s")
+    } else if s >= 3600 {
         let h = s / 3600;
         let m = (s % 3600) / 60;
-        format!("{h}h{m}m")
+        let rem = s % 60;
+        format!("{h}h{m}m{rem}s")
     } else if s >= 60 {
         let m = s / 60;
         let rem = s % 60;

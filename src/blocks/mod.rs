@@ -36,7 +36,7 @@ pub fn render_block(name: &str, ctx: &RenderContext) -> Option<String> {
         "context-bar" => context_bar::render(ctx, bc),
         "tokens" => tokens::render(ctx),
         "cost" => cost::render(ctx, bc),
-        "duration" => duration::render(ctx),
+        "duration" => duration::render(ctx, bc),
         "rate-limit" => rate_limit::render(ctx, bc),
         _ => None,
     }

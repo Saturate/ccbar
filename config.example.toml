@@ -2,7 +2,7 @@
 # https://github.com/Saturate/ccbar
 
 [[lines]]
-blocks = ["dir", "git-branch", "git-status"]
+blocks = ["dir", "git-branch"]
 
 [[lines]]
 blocks = ["model", "context-bar", "tokens", "cost", "duration", "rate-limit"]
