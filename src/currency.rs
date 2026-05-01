@@ -90,3 +90,58 @@ pub fn symbol(currency: &str) -> &str {
         _ => "",
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn usd_rate_is_identity() {
+        assert_eq!(get_rate("USD"), Some(1.0));
+        assert_eq!(get_rate("usd"), Some(1.0));
+    }
+
+    #[test]
+    fn known_symbols() {
+        assert_eq!(symbol("USD"), "$");
+        assert_eq!(symbol("EUR"), "€");
+        assert_eq!(symbol("GBP"), "£");
+        assert_eq!(symbol("JPY"), "¥");
+        assert_eq!(symbol("DKK"), "kr ");
+        assert_eq!(symbol("SEK"), "kr ");
+        assert_eq!(symbol("NOK"), "kr ");
+        assert_eq!(symbol("CHF"), "CHF ");
+        assert_eq!(symbol("INR"), "₹");
+        assert_eq!(symbol("BRL"), "R$");
+        assert_eq!(symbol("AUD"), "$");
+        assert_eq!(symbol("CAD"), "$");
+    }
+
+    #[test]
+    fn unknown_currency_returns_empty_symbol() {
+        assert_eq!(symbol("XYZ"), "");
+    }
+
+    #[test]
+    fn symbol_is_case_insensitive() {
+        assert_eq!(symbol("eur"), "€");
+        assert_eq!(symbol("Gbp"), "£");
+        assert_eq!(symbol("dkk"), "kr ");
+    }
+
+    #[test]
+    fn cached_rates_round_trip() {
+        let mut rates = HashMap::new();
+        rates.insert("DKK".to_string(), 6.85);
+        rates.insert("EUR".to_string(), 0.85);
+        let cached = CachedRates {
+            fetched_at: 1000000,
+            rates,
+        };
+        let json = serde_json::to_string(&cached).unwrap();
+        let parsed: CachedRates = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.fetched_at, 1000000);
+        assert_eq!(parsed.rates["DKK"], 6.85);
+        assert_eq!(parsed.rates["EUR"], 0.85);
+    }
+}

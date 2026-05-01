@@ -109,6 +109,67 @@ fn default_config() -> Config {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_toml_parses() {
+        let cfg: Config = toml::from_str(DEFAULT_TOML).unwrap();
+        assert_eq!(cfg.lines.len(), 2);
+        assert!(cfg.lines[0].blocks.contains(&"dir".to_string()));
+        assert!(cfg.lines[1].blocks.contains(&"cost".to_string()));
+    }
+
+    #[test]
+    fn empty_config_uses_defaults() {
+        let cfg: Config = toml::from_str("").unwrap();
+        assert_eq!(cfg.lines.len(), 2);
+        assert_eq!(cfg.separator.char, " │ ");
+    }
+
+    #[test]
+    fn currency_field_parses() {
+        let toml = r#"
+[[lines]]
+blocks = ["cost"]
+
+[blocks.cost]
+currency = "DKK"
+warn = 7.0
+crit = 35.0
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        let cost_bc = cfg.blocks.get("cost").unwrap();
+        assert_eq!(cost_bc.currency.as_deref(), Some("DKK"));
+        assert_eq!(cost_bc.warn, Some(7.0));
+        assert_eq!(cost_bc.crit, Some(35.0));
+    }
+
+    #[test]
+    fn custom_separator() {
+        let toml = r#"
+[separator]
+char = " | "
+style = "bold"
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        assert_eq!(cfg.separator.char, " | ");
+        assert_eq!(cfg.separator.style, "bold");
+    }
+
+    #[test]
+    fn single_line_config() {
+        let toml = r#"
+[[lines]]
+blocks = ["model", "cost"]
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        assert_eq!(cfg.lines.len(), 1);
+        assert_eq!(cfg.lines[0].blocks, vec!["model", "cost"]);
+    }
+}
+
 pub const DEFAULT_TOML: &str = r#"# ccbar configuration
 # https://github.com/Saturate/ccbar
 
