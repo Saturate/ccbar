@@ -48,6 +48,7 @@ pub struct BlockConfig {
     pub segments: Option<usize>,
     pub abbreviate_home: Option<bool>,
     pub format: Option<String>,
+    pub currency: Option<String>,
 }
 
 fn default_lines() -> Vec<Line> {
