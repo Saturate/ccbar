@@ -13,6 +13,10 @@ fn main() {
             cli::run_init();
             return;
         }
+        cli::Action::Setup { force } => {
+            cli::run_setup(force);
+            return;
+        }
         cli::Action::Validate => {
             cli::run_validate();
             return;

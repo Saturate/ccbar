@@ -18,6 +18,7 @@ pub struct Line {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct Separator {
     #[serde(default = "default_sep_char")]
     pub char: String,
@@ -35,6 +36,7 @@ impl Default for Separator {
 }
 
 #[derive(Deserialize, Default)]
+#[allow(dead_code)]
 pub struct BlockConfig {
     pub width: Option<usize>,
     pub thresholds: Option<Vec<u64>>,
@@ -77,20 +79,6 @@ fn default_sep_style() -> String {
     "dim".into()
 }
 
-impl Config {
-    pub fn block_config(&self, name: &str) -> BlockConfig {
-        self.blocks
-            .get(name)
-            .map(|_| {
-                // Re-deserialize isn't needed; just return a ref. But we need owned.
-                // Since BlockConfig is small, just read fields from the map.
-                // Actually we can just look up and clone-ish. Let's do a simpler approach.
-                BlockConfig::default()
-            })
-            .unwrap_or_default()
-    }
-}
-
 pub fn config_path() -> PathBuf {
     dirs_config().join("ccbar").join("config.toml")
 }
@@ -118,10 +106,6 @@ fn default_config() -> Config {
         separator: Separator::default(),
         blocks: HashMap::new(),
     }
-}
-
-pub fn get_block_config<'a>(config: &'a Config, name: &str) -> Option<&'a BlockConfig> {
-    config.blocks.get(name)
 }
 
 pub const DEFAULT_TOML: &str = r#"# ccbar configuration

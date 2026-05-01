@@ -1,7 +1,9 @@
 pub const RST: &str = "\x1b[0m";
+#[allow(dead_code)]
 pub const BOLD: &str = "\x1b[1m";
 pub const DIM: &str = "\x1b[2m";
 
+#[allow(dead_code)]
 pub const FG_RED: &str = "\x1b[31m";
 pub const FG_GREEN: &str = "\x1b[32m";
 pub const FG_YELLOW: &str = "\x1b[33m";

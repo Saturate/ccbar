@@ -10,29 +10,26 @@ opus 4.6/1M │ ctx ━━━┄┄┄┄┄┄┄┄┄ 20% │ 45.2k 8.1k │ 
 ## Install
 
 ```bash
-git clone https://github.com/Saturate/ccbar.git
-cd ccbar
-cargo build --release
+cargo install ccbar
 ```
-
-Binary at `target/release/ccbar` (~600 KB, zero runtime deps).
 
 ## Setup
 
 ```bash
-# Write default config
-ccbar --init
-
-# Point Claude Code at the binary
+ccbar --setup    # configure Claude Code to use ccbar
+ccbar --init     # write default ccbar config (optional — sensible defaults built in)
 ```
 
-In your Claude Code `settings.json`:
+`--setup` adds the `statusLine` entry to `~/.claude/settings.json` automatically.
+Restart Claude Code (or open `/hooks`) to pick up the change.
+
+To configure manually instead, add this to your Claude Code `settings.json`:
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "/path/to/ccbar",
+    "command": "ccbar",
     "refreshInterval": 1
   }
 }
@@ -216,6 +213,7 @@ Bar color follows the same thresholds as context-bar (green → yellow → orang
 
 ```
 ccbar              # render statusline (reads JSON from stdin)
+ccbar --setup      # add statusLine to ~/.claude/settings.json
 ccbar --init       # write default config to ~/.config/ccbar/config.toml
 ccbar --validate   # check config syntax, report line/block counts
 ccbar --version    # print version
@@ -238,8 +236,6 @@ The binary is ~600 KB with LTO and strip. Startup is ~1-5ms — well within the
 - Transcript JSONL parsing (token speed, block timer)
 - Anthropic usage API (weekly/monthly actuals)
 - Atomic block composition (`parts` override in TOML)
-- `cargo install ccbar`
-
 ## License
 
 MIT

@@ -25,11 +25,7 @@ pub fn render_branch(ctx: &RenderContext) -> Option<String> {
 }
 
 pub fn render_status(ctx: &RenderContext) -> Option<String> {
-    // Kept as a standalone block for configs that want branch and status separated.
-    // Default config uses git-branch which now includes status inline.
-    if ctx.git.branch.is_none() {
-        return None;
-    }
+    ctx.git.branch.as_ref()?;
 
     let mut parts = String::new();
 
