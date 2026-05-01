@@ -21,8 +21,16 @@ fn main() {
             cli::run_validate();
             return;
         }
+        cli::Action::Docs => {
+            cli::run_docs();
+            return;
+        }
         cli::Action::Version => {
             cli::run_version();
+            return;
+        }
+        cli::Action::Help => {
+            cli::run_help();
             return;
         }
         cli::Action::Render => {}

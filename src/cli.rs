@@ -7,7 +7,9 @@ pub enum Action {
     Init,
     Setup { force: bool },
     Validate,
+    Docs,
     Version,
+    Help,
 }
 
 pub fn parse_args() -> Action {
@@ -18,11 +20,124 @@ pub fn parse_args() -> Action {
             "--init" => return Action::Init,
             "--setup" => return Action::Setup { force: has_force },
             "--validate" => return Action::Validate,
+            "--docs" => return Action::Docs,
             "--version" => return Action::Version,
+            "--help" | "-h" => return Action::Help,
             _ => {}
         }
     }
     Action::Render
+}
+
+pub fn run_help() {
+    println!(
+        "\
+ccbar {} — fast, configurable statusline for Claude Code
+
+USAGE
+    ccbar                   Render statusline (reads JSON from stdin)
+    ccbar --setup [--force] Add statusLine to ~/.claude/settings.json
+    ccbar --init            Write default config to ~/.config/ccbar/config.toml
+    ccbar --validate        Check config syntax, report line/block counts
+    ccbar --docs            Print config reference (for Claude Code context)
+    ccbar --version         Print version
+    ccbar --help, -h        Show this help
+
+CONFIG
+    {}
+
+    To customize, read docs or just ask Claude Code:
+      \"move cost to the first line\"
+      \"remove the rate limit bar\"
+      \"add git branch to line 2\"
+
+DOCS
+    https://github.com/Saturate/ccbar",
+        env!("CARGO_PKG_VERSION"),
+        config::config_path().display(),
+    );
+}
+
+pub fn run_docs() {
+    let path = config::config_path();
+    let current = fs::read_to_string(&path).ok();
+
+    println!("# ccbar config reference");
+    println!("# Config: {}", path.display());
+    println!();
+
+    if let Some(content) = &current {
+        println!("## Current config\n");
+        println!("```toml");
+        print!("{content}");
+        println!("```");
+        println!();
+    } else {
+        println!("## Current config: (none — using built-in defaults)\n");
+    }
+
+    print!("\
+## Available blocks
+
+Blocks are placed in `[[lines]]` arrays. Order determines render order.
+Blocks with no data are hidden automatically.
+
+### dir
+Working directory with ~ abbreviation.
+  segments = 0           # 0 = full path, N = last N segments
+  abbreviate_home = true
+
+### git-branch
+Branch name with dirty flag and ahead/behind counts.
+Includes inline status (! for dirty, arrows for ahead/behind).
+
+### git-status
+Standalone dirty/ahead/behind (without branch name).
+Use if you want branch and status on separate lines.
+
+### model
+Model name and context window. Color by family (opus=magenta, sonnet=cyan, haiku=green).
+
+### context-bar
+Visual progress bar for context window usage.
+  width = 12             # bar width in characters
+  thresholds = [50, 75, 90]  # color shift points
+
+### tokens
+Input/output token counts. Auto-scales (raw, Xk, XM).
+
+### cost
+Session cost in USD.
+  warn = 1.0             # yellow above this
+  crit = 5.0             # red above this
+
+### duration
+Session duration. Auto-scales from seconds to days.
+  format = \"{{total_h}}h{{m:02}}m{{s:02}}s\"  # optional format string
+  Tokens: {{d}} {{h}} {{m}} {{s}} {{h:02}} {{m:02}} {{s:02}} {{total_h}} {{total_m}} {{total_s}}
+
+### rate-limit
+5-hour and 7-day rate limit bars with countdowns.
+  show_countdown = true
+  show_bar = true
+  bar_width = 8
+
+## Separator
+
+  [separator]
+  char = \" | \"
+  style = \"dim\"
+
+## Structure
+
+  [[lines]]              # first status line
+  blocks = [\"dir\", \"git-branch\"]
+
+  [[lines]]              # second status line
+  blocks = [\"model\", \"context-bar\", \"tokens\", \"cost\", \"duration\", \"rate-limit\"]
+
+Add as many [[lines]] as needed. Reorder or remove blocks freely.
+");
 }
 
 pub fn run_init() {

@@ -216,7 +216,9 @@ ccbar              # render statusline (reads JSON from stdin)
 ccbar --setup      # add statusLine to ~/.claude/settings.json
 ccbar --init       # write default config to ~/.config/ccbar/config.toml
 ccbar --validate   # check config syntax, report line/block counts
+ccbar --docs       # print config reference (for Claude Code context)
 ccbar --version    # print version
+ccbar --help       # show help
 ```
 
 ## How it works
@@ -228,6 +230,19 @@ the working directory.
 
 The binary is ~600 KB with LTO and strip. Startup is ~1-5ms — well within the
 1-second refresh budget.
+
+## Configuring with Claude Code
+
+Just paste this into Claude Code:
+
+```
+Run `ccbar --docs` and configure my statusline. <describe what you want>
+```
+
+For example:
+- "Run `ccbar --docs` and configure my statusline. Put cost and duration on line 1, everything else on line 2"
+- "Run `ccbar --docs` and configure my statusline. Remove the rate limit bar and make the context bar wider"
+- "Run `ccbar --docs` and configure my statusline. Warn me when cost hits $3"
 
 ## Future
 
