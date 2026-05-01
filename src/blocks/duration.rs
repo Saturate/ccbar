@@ -37,3 +37,44 @@ fn fmt_duration_custom(ms: u64, fmt: &str) -> String {
         .replace("{m:02}", &format!("{m:02}"))
         .replace("{s:02}", &format!("{s:02}"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn custom_format_all_tokens() {
+        let ms = 691_092_000; // 7d 23h 58m 12s
+        assert_eq!(fmt_duration_custom(ms, "{d}d {h}h {m}m {s}s"), "7d 23h 58m 12s");
+    }
+
+    #[test]
+    fn custom_format_total_hours() {
+        let ms = 691_092_000;
+        assert_eq!(fmt_duration_custom(ms, "{total_h}:{m:02}:{s:02}"), "191:58:12");
+    }
+
+    #[test]
+    fn custom_format_zero_padded() {
+        let ms = 3_661_000; // 1h 1m 1s
+        assert_eq!(fmt_duration_custom(ms, "{h:02}:{m:02}:{s:02}"), "01:01:01");
+    }
+
+    #[test]
+    fn custom_format_hours_minutes_only() {
+        let ms = 86_280_000; // 23h 58m
+        assert_eq!(fmt_duration_custom(ms, "{h}h{m}m"), "23h58m");
+    }
+
+    #[test]
+    fn custom_format_total_seconds() {
+        let ms = 5_000;
+        assert_eq!(fmt_duration_custom(ms, "{total_s}s"), "5s");
+    }
+
+    #[test]
+    fn custom_format_total_minutes() {
+        let ms = 300_000; // 5m
+        assert_eq!(fmt_duration_custom(ms, "{total_m}m"), "5m");
+    }
+}

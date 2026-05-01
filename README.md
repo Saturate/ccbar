@@ -142,15 +142,21 @@ Session cost in USD.
 
 ```toml
 [blocks.cost]
-warn = 1.0   # yellow above this
-crit = 5.0   # red above this
+warn = 1.0        # yellow above this
+crit = 5.0        # red above this
+currency = "DKK"  # any ISO 4217 code (default: USD)
 ```
 
 ```
-$0.42    # green (below warn)
-$2.50    # yellow (above warn)
-$8.12    # red (above crit)
+$0.42     # USD (default)
+kr 2.88   # DKK
+€0.38     # EUR
+£0.33     # GBP
 ```
+
+Currency conversion uses [frankfurter.app](https://frankfurter.app) (ECB reference
+rates). Rates are cached for 24 hours at `~/.cache/ccbar/rates.json`. If the API is
+unreachable, cost falls back to USD.
 
 ### duration
 

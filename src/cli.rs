@@ -107,9 +107,10 @@ Visual progress bar for context window usage.
 Input/output token counts. Auto-scales (raw, Xk, XM).
 
 ### cost
-Session cost in USD.
+Session cost. Default USD, supports currency conversion via frankfurter.app (ECB rates, cached 24h).
   warn = 1.0             # yellow above this
   crit = 5.0             # red above this
+  currency = \"DKK\"       # any ISO 4217 code (USD, EUR, GBP, DKK, SEK, JPY, ...)
 
 ### duration
 Session duration. Auto-scales from seconds to days.

@@ -10,6 +10,7 @@ repository = "https://github.com/Saturate/ccbar"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 toml = "0.8"
+ureq = "3"
 
 [profile.release]
 opt-level = "z"
