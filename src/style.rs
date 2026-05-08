@@ -16,6 +16,27 @@ pub const FG_BYELLOW: &str = "\x1b[93m";
 pub const FG_BCYAN: &str = "\x1b[96m";
 pub const FG_BMAGENTA: &str = "\x1b[95m";
 
+pub fn resolve_color(name: &str) -> &'static str {
+    match name {
+        "red" => FG_RED,
+        "green" => FG_GREEN,
+        "yellow" => FG_YELLOW,
+        "blue" => "\x1b[34m",
+        "magenta" => FG_MAGENTA,
+        "cyan" => FG_CYAN,
+        "white" => "\x1b[37m",
+        "bright-red" => FG_BRED,
+        "bright-green" => FG_BGREEN,
+        "bright-yellow" => FG_BYELLOW,
+        "bright-blue" => "\x1b[94m",
+        "bright-magenta" => FG_BMAGENTA,
+        "bright-cyan" => FG_BCYAN,
+        "bright-white" => "\x1b[97m",
+        "dim" => DIM,
+        _ => "",
+    }
+}
+
 pub fn color_for_model(name: &str) -> &'static str {
     if name.contains("opus") {
         FG_MAGENTA
@@ -77,7 +98,8 @@ pub fn fmt_tokens(t: u64) -> String {
     }
 }
 
-pub fn fmt_duration(ms: u64) -> String {
+#[cfg(test)]
+fn fmt_duration(ms: u64) -> String {
     let s = ms / 1000;
     if s >= 86400 {
         let d = s / 86400;
@@ -234,5 +256,20 @@ mod tests {
 
         let full = strip_ansi(&progress_bar(100, 8));
         assert_eq!(full.chars().filter(|&c| c == '━').count(), 8);
+    }
+
+    #[test]
+    fn resolve_color_known() {
+        assert_eq!(resolve_color("red"), FG_RED);
+        assert_eq!(resolve_color("green"), FG_GREEN);
+        assert_eq!(resolve_color("cyan"), FG_CYAN);
+        assert_eq!(resolve_color("bright-magenta"), FG_BMAGENTA);
+        assert_eq!(resolve_color("dim"), DIM);
+    }
+
+    #[test]
+    fn resolve_color_unknown_returns_empty() {
+        assert_eq!(resolve_color("neon-pink"), "");
+        assert_eq!(resolve_color(""), "");
     }
 }

@@ -37,7 +37,7 @@ fn now_secs() -> u64 {
 fn load_cached() -> Option<CachedRates> {
     let content = fs::read_to_string(cache_path()).ok()?;
     let cached: CachedRates = serde_json::from_str(&content).ok()?;
-    if now_secs() - cached.fetched_at < MAX_AGE_SECS {
+    if now_secs().saturating_sub(cached.fetched_at) < MAX_AGE_SECS {
         Some(cached)
     } else {
         None
@@ -45,7 +45,20 @@ fn load_cached() -> Option<CachedRates> {
 }
 
 fn fetch_and_cache() -> Option<CachedRates> {
-    let body: String = ureq::get(API_URL).call().ok()?.body_mut().read_to_string().ok()?;
+    let agent = ureq::Agent::new_with_config(
+        ureq::config::Config::builder()
+            .timeout_global(Some(std::time::Duration::from_secs(3)))
+            .build(),
+    );
+    let body: String = agent
+        .get(API_URL)
+        .call()
+        .ok()?
+        .body_mut()
+        .with_config()
+        .limit(64 * 1024)
+        .read_to_string()
+        .ok()?;
     let resp: ApiResponse = serde_json::from_str(&body).ok()?;
     let cached = CachedRates {
         fetched_at: now_secs(),
