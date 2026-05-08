@@ -49,6 +49,18 @@ pub struct BlockConfig {
     pub abbreviate_home: Option<bool>,
     pub format: Option<String>,
     pub currency: Option<String>,
+    pub parts: Option<Vec<String>>,
+    pub colors: Option<HashMap<String, String>>,
+}
+
+impl BlockConfig {
+    pub fn color_for(&self, part: &str, default: &'static str) -> &str {
+        self.colors
+            .as_ref()
+            .and_then(|c| c.get(part))
+            .map(|name| crate::style::resolve_color(name))
+            .unwrap_or(default)
+    }
 }
 
 fn default_lines() -> Vec<Line> {
@@ -156,6 +168,55 @@ style = "bold"
         let cfg: Config = toml::from_str(toml).unwrap();
         assert_eq!(cfg.separator.char, " | ");
         assert_eq!(cfg.separator.style, "bold");
+    }
+
+    #[test]
+    fn parts_field_parses() {
+        let toml = r#"
+[[lines]]
+blocks = ["git-branch"]
+
+[blocks.git-branch]
+parts = ["branch", "dirty"]
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        let bc = cfg.blocks.get("git-branch").unwrap();
+        assert_eq!(
+            bc.parts.as_deref(),
+            Some(vec!["branch".to_string(), "dirty".to_string()].as_slice())
+        );
+    }
+
+    #[test]
+    fn colors_field_parses() {
+        let toml = r#"
+[[lines]]
+blocks = ["duration"]
+
+[blocks.duration.colors]
+hours = "bright-cyan"
+minutes = "yellow"
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        let bc = cfg.blocks.get("duration").unwrap();
+        let colors = bc.colors.as_ref().unwrap();
+        assert_eq!(colors.get("hours").unwrap(), "bright-cyan");
+        assert_eq!(colors.get("minutes").unwrap(), "yellow");
+    }
+
+    #[test]
+    fn color_for_with_override() {
+        let toml = r#"
+[[lines]]
+blocks = ["git-branch"]
+
+[blocks.git-branch.colors]
+branch = "red"
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        let bc = cfg.blocks.get("git-branch").unwrap();
+        assert_eq!(bc.color_for("branch", "\x1b[95m"), "\x1b[31m");
+        assert_eq!(bc.color_for("dirty", "\x1b[33m"), "\x1b[33m");
     }
 
     #[test]

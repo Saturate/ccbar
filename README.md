@@ -59,6 +59,46 @@ char = " │ "
 style = "dim"
 ```
 
+## Parts (sub-block composition)
+
+Any multi-part block supports filtering and reordering via `parts`:
+
+```toml
+[blocks.git-branch]
+parts = ["branch", "dirty"]   # drops icon and ahead-behind
+
+[blocks.context-bar]
+parts = ["bar", "pct"]        # drops the 'ctx' label
+
+[blocks.model]
+parts = ["name"]              # drops /1M context size
+```
+
+Omit `parts` to render all parts in default order. Order in `parts` controls
+render order. See each block below for available part names.
+
+## Colors
+
+Override any part's color using a `[blocks.<name>.colors]` table:
+
+```toml
+[blocks.duration.colors]
+days = "cyan"
+hours = "magenta"
+minutes = "yellow"
+seconds = "green"
+
+[blocks.git-branch.colors]
+branch = "blue"
+dirty = "red"
+```
+
+Available colors: `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`,
+`bright-red`, `bright-green`, `bright-yellow`, `bright-blue`, `bright-magenta`,
+`bright-cyan`, `bright-white`, `dim`.
+
+Omit `colors` to use built-in defaults.
+
 ## Blocks
 
 ### dir
@@ -91,12 +131,16 @@ Git branch name with inline dirty flag and ahead/behind counts.
 
 Hidden when not in a git repo.
 
+Parts: `icon`, `branch`, `dirty`, `ahead-behind`
+
 ### git-status
 
 Standalone dirty/ahead/behind block (without branch name). Useful if you want
 `git-branch` and `git-status` on different lines or with a separator between them.
 
 Most configs should just use `git-branch` which includes status inline.
+
+Parts: `dirty`, `ahead-behind`
 
 ### model
 
@@ -110,6 +154,8 @@ Color by model family:
 - Opus — magenta
 - Sonnet — cyan
 - Haiku — green
+
+Parts: `name`, `context-size`
 
 ### context-bar
 
@@ -125,6 +171,8 @@ thresholds = [50, 75, 90] # color shift points (green → yellow → orange → 
 ctx ━━━┄┄┄┄┄┄┄┄┄ 20%
 ```
 
+Parts: `label`, `bar`, `pct`
+
 ### tokens
 
 Input and output token counts for the session.
@@ -135,6 +183,8 @@ Input and output token counts for the session.
 
 - Input in green, output in yellow
 - Auto-scales: raw below 1k, `X.Xk` for thousands, `X.XM` for millions
+
+Parts: `input`, `output`
 
 ### cost
 
@@ -169,11 +219,15 @@ Session duration. Auto-scales from seconds up to days.
 format = "{total_h}h{m:02}m{s:02}s"
 ```
 
-Default rendering:
+Default rendering (each unit has a subtle color):
 - `< 1m` → `42s`
 - `< 1h` → `4m12s`
 - `< 1d` → `3h26m5s`
 - `>= 1d` → `7d23h58m12s`
+
+Parts: `days`, `hours`, `minutes`, `seconds`
+
+Using a `format` string disables parts and renders as a single string.
 
 Format tokens:
 
@@ -214,6 +268,8 @@ bar_width = 8           # bar width in characters
 ```
 
 Bar color follows the same thresholds as context-bar (green → yellow → orange → red).
+
+Parts: `5h`, `7d`
 
 ## CLI
 
@@ -256,7 +312,6 @@ For example:
 - Azure DevOps PR/work item/pipeline blocks (via REST API)
 - Transcript JSONL parsing (token speed, block timer)
 - Anthropic usage API (weekly/monthly actuals)
-- Atomic block composition (`parts` override in TOML)
 ## License
 
 MIT

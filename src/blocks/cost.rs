@@ -2,9 +2,9 @@ use crate::config::BlockConfig;
 use crate::currency;
 use crate::style::*;
 
-use super::RenderContext;
+use super::{BlockPart, RenderContext};
 
-pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
+pub fn render_parts(ctx: &RenderContext, bc: &BlockConfig) -> Vec<BlockPart> {
     let cost_usd = ctx.status.total_cost();
     let currency = bc.currency.as_deref().unwrap_or("USD");
 
@@ -27,7 +27,8 @@ pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
 
     let warn = bc.warn.unwrap_or(1.0);
     let crit = bc.crit.unwrap_or(5.0);
-    let color = color_for_cost(cost, warn, crit);
+    let default_color = color_for_cost(cost, warn, crit);
+    let color = bc.color_for("cost", default_color);
 
-    Some(format!("{color}{prefix}{cost:.2}{RST}"))
+    vec![("cost", format!("{color}{prefix}{cost:.2}{RST}"))]
 }

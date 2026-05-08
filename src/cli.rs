@@ -1,3 +1,4 @@
+use crate::blocks;
 use crate::config;
 use std::fs;
 use std::path::PathBuf;
@@ -90,21 +91,26 @@ Working directory with ~ abbreviation.
 ### git-branch
 Branch name with dirty flag and ahead/behind counts.
 Includes inline status (! for dirty, arrows for ahead/behind).
+  parts: icon, branch, dirty, ahead-behind (default: all)
 
 ### git-status
 Standalone dirty/ahead/behind (without branch name).
 Use if you want branch and status on separate lines.
+  parts: dirty, ahead-behind (default: all)
 
 ### model
 Model name and context window. Color by family (opus=magenta, sonnet=cyan, haiku=green).
+  parts: name, context-size (default: all)
 
 ### context-bar
 Visual progress bar for context window usage.
   width = 12             # bar width in characters
   thresholds = [50, 75, 90]  # color shift points
+  parts: label, bar, pct (default: all)
 
 ### tokens
 Input/output token counts. Auto-scales (raw, Xk, XM).
+  parts: input, output (default: all)
 
 ### cost
 Session cost. Default USD, supports currency conversion via frankfurter.app (ECB rates, cached 24h).
@@ -122,6 +128,49 @@ Session duration. Auto-scales from seconds to days.
   show_countdown = true
   show_bar = true
   bar_width = 8
+  parts: 5h, 7d (default: all)
+
+## Parts (sub-block composition)
+
+Any multi-part block supports filtering and reordering via `parts`:
+
+  [blocks.git-branch]
+  parts = [\"branch\", \"dirty\"]   # drops icon and ahead-behind
+
+  [blocks.context-bar]
+  parts = [\"bar\", \"pct\"]        # drops the 'ctx' label
+
+  [blocks.model]
+  parts = [\"name\"]              # drops /1M context size
+
+Omit `parts` to render all parts in default order.
+Order in `parts` controls render order.
+
+## Colors (per-part color overrides)
+
+Override any part's color using a `[blocks.<name>.colors]` table:
+
+  [blocks.duration.colors]
+  days = \"cyan\"
+  hours = \"magenta\"
+  minutes = \"yellow\"
+  seconds = \"green\"
+
+  [blocks.git-branch.colors]
+  branch = \"blue\"
+  dirty = \"red\"
+
+  [blocks.tokens.colors]
+  input = \"bright-cyan\"
+  output = \"bright-yellow\"
+
+Available colors:
+  red, green, yellow, blue, magenta, cyan, white
+  bright-red, bright-green, bright-yellow, bright-blue
+  bright-magenta, bright-cyan, bright-white
+  dim
+
+Omit `colors` to use built-in defaults.
 
 ## Separator
 
@@ -224,7 +273,37 @@ pub fn run_validate() {
         Ok(content) => match toml::from_str::<config::Config>(&content) {
             Ok(cfg) => {
                 let block_count: usize = cfg.lines.iter().map(|l| l.blocks.len()).sum();
+                let mut warnings = 0;
+
+                for (block_name, block_cfg) in &cfg.blocks {
+                    if let Some(ref parts) = block_cfg.parts {
+                        match blocks::valid_parts(block_name) {
+                            Some(valid) => {
+                                for p in parts {
+                                    if !valid.contains(&p.as_str()) {
+                                        eprintln!(
+                                            "Warning: block '{}' has no part '{}'. Valid: {:?}",
+                                            block_name, p, valid
+                                        );
+                                        warnings += 1;
+                                    }
+                                }
+                            }
+                            None => {
+                                eprintln!(
+                                    "Warning: block '{}' is single-part, `parts` has no effect",
+                                    block_name
+                                );
+                                warnings += 1;
+                            }
+                        }
+                    }
+                }
+
                 println!("Valid: {} lines, {} blocks", cfg.lines.len(), block_count);
+                if warnings > 0 {
+                    println!("{} warning(s)", warnings);
+                }
             }
             Err(e) => {
                 eprintln!("Invalid config at {}: {e}", path.display());
