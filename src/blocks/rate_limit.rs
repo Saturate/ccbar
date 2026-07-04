@@ -1,10 +1,13 @@
 use crate::config::BlockConfig;
 use crate::style::*;
 
-use super::RenderContext;
+use super::{BlockPart, RenderContext};
 
-pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
-    let rl = ctx.status.rate_limits.as_ref()?;
+pub fn render_parts(ctx: &RenderContext, bc: &BlockConfig) -> Vec<BlockPart> {
+    let rl = match ctx.status.rate_limits.as_ref() {
+        Some(r) => r,
+        None => return vec![],
+    };
     let bar_width = bc.bar_width.unwrap_or(8);
     let show_countdown = bc.show_countdown.unwrap_or(true);
     let now = std::time::SystemTime::now()
@@ -12,7 +15,7 @@ pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
 
-    let mut parts = Vec::new();
+    let mut parts: Vec<BlockPart> = vec![];
 
     if let Some(five) = &rl.five_hour
         && let Some(pct) = five.used_percentage
@@ -30,7 +33,7 @@ pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
         }
 
         segment.push_str(&format!("{bar} {DIM}{pct_int}%{RST}"));
-        parts.push(segment);
+        parts.push(("5h", segment));
     }
 
     if let Some(seven) = &rl.seven_day
@@ -49,12 +52,8 @@ pub fn render(ctx: &RenderContext, bc: &BlockConfig) -> Option<String> {
         }
 
         segment.push_str(&format!("{bar} {DIM}{pct_int}%{RST}"));
-        parts.push(segment);
+        parts.push(("7d", segment));
     }
 
-    if parts.is_empty() {
-        None
-    } else {
-        Some(parts.join("  "))
-    }
+    parts
 }
