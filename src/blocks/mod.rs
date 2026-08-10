@@ -137,11 +137,7 @@ fn git_cmd(cwd: &str, args: &[&str]) -> Option<String> {
         return None;
     }
     let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if s.is_empty() {
-        None
-    } else {
-        Some(s)
-    }
+    if s.is_empty() { None } else { Some(s) }
 }
 
 #[cfg(test)]
@@ -199,8 +195,14 @@ mod tests {
 
     #[test]
     fn valid_parts_known_blocks() {
-        assert_eq!(valid_parts("git-branch"), Some(["icon", "branch", "dirty", "ahead-behind"].as_slice()));
-        assert_eq!(valid_parts("model"), Some(["name", "context-size"].as_slice()));
+        assert_eq!(
+            valid_parts("git-branch"),
+            Some(["icon", "branch", "dirty", "ahead-behind"].as_slice())
+        );
+        assert_eq!(
+            valid_parts("model"),
+            Some(["name", "context-size"].as_slice())
+        );
         assert_eq!(valid_parts("tokens"), Some(["input", "output"].as_slice()));
     }
 
@@ -212,7 +214,10 @@ mod tests {
 
     #[test]
     fn valid_parts_duration() {
-        assert_eq!(valid_parts("duration"), Some(["days", "hours", "minutes", "seconds"].as_slice()));
+        assert_eq!(
+            valid_parts("duration"),
+            Some(["days", "hours", "minutes", "seconds"].as_slice())
+        );
     }
 
     #[test]

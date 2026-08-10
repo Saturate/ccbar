@@ -66,10 +66,7 @@ impl BlockConfig {
 fn default_lines() -> Vec<Line> {
     vec![
         Line {
-            blocks: vec![
-                "dir".into(),
-                "git-branch".into(),
-            ],
+            blocks: vec!["dir".into(), "git-branch".into()],
         },
         Line {
             blocks: vec![

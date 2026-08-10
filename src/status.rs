@@ -84,11 +84,7 @@ impl StatusJSON {
     }
 
     pub fn model_short(&self) -> String {
-        let name = self
-            .model
-            .display_name
-            .as_deref()
-            .unwrap_or(&self.model.id);
+        let name = self.model.display_name.as_deref().unwrap_or(&self.model.id);
         name.split('(').next().unwrap_or(name).trim().to_lowercase()
     }
 

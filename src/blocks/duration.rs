@@ -70,13 +70,19 @@ mod tests {
     #[test]
     fn custom_format_all_tokens() {
         let ms = 691_092_000; // 7d 23h 58m 12s
-        assert_eq!(fmt_duration_custom(ms, "{d}d {h}h {m}m {s}s"), "7d 23h 58m 12s");
+        assert_eq!(
+            fmt_duration_custom(ms, "{d}d {h}h {m}m {s}s"),
+            "7d 23h 58m 12s"
+        );
     }
 
     #[test]
     fn custom_format_total_hours() {
         let ms = 691_092_000;
-        assert_eq!(fmt_duration_custom(ms, "{total_h}:{m:02}:{s:02}"), "191:58:12");
+        assert_eq!(
+            fmt_duration_custom(ms, "{total_h}:{m:02}:{s:02}"),
+            "191:58:12"
+        );
     }
 
     #[test]
@@ -106,7 +112,10 @@ mod tests {
     #[test]
     fn padded_tokens_not_corrupted_by_short_tokens() {
         let ms = 3_661_000; // 1h 1m 1s
-        assert_eq!(fmt_duration_custom(ms, "{h:02}h{m:02}m{s:02}s"), "01h01m01s");
+        assert_eq!(
+            fmt_duration_custom(ms, "{h:02}h{m:02}m{s:02}s"),
+            "01h01m01s"
+        );
         let ms2 = 45_296_000; // 12h 34m 56s
         assert_eq!(fmt_duration_custom(ms2, "{h:02}:{m:02}:{s:02}"), "12:34:56");
     }

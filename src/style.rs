@@ -40,6 +40,8 @@ pub fn resolve_color(name: &str) -> &'static str {
 pub fn color_for_model(name: &str) -> &'static str {
     if name.contains("opus") {
         FG_MAGENTA
+    } else if name.contains("fable") {
+        FG_BYELLOW
     } else if name.contains("haiku") {
         FG_GREEN
     } else {
@@ -236,6 +238,8 @@ mod tests {
     fn color_for_model_families() {
         assert_eq!(color_for_model("opus 4.6"), FG_MAGENTA);
         assert_eq!(color_for_model("claude-opus-4-6"), FG_MAGENTA);
+        assert_eq!(color_for_model("fable 5"), FG_BYELLOW);
+        assert_eq!(color_for_model("claude-fable-5"), FG_BYELLOW);
         assert_eq!(color_for_model("haiku 4.5"), FG_GREEN);
         assert_eq!(color_for_model("sonnet 4.6"), FG_CYAN);
         assert_eq!(color_for_model("unknown"), FG_CYAN);

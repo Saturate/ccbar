@@ -22,7 +22,10 @@ pub fn render_parts(ctx: &RenderContext, bc: &BlockConfig) -> Vec<BlockPart> {
 
     let rendered = if current == project {
         format!("{dir_color}{project_display}{RST}")
-    } else if let Some(rel) = current.strip_prefix(project.as_str()).and_then(|r| r.strip_prefix('/')) {
+    } else if let Some(rel) = current
+        .strip_prefix(project.as_str())
+        .and_then(|r| r.strip_prefix('/'))
+    {
         let sub_color = bc.color_for("subdir", FG_BGREEN);
         format!("{dir_color}{project_display}/{sub_color}{rel}{RST}")
     } else {

@@ -24,9 +24,7 @@ pub fn render_parts(ctx: &RenderContext, bc: &BlockConfig) -> Vec<BlockPart> {
         let bar = progress_bar(pct_int, bar_width);
         let mut segment = String::new();
 
-        if show_countdown
-            && let Some(resets) = five.resets_at
-        {
+        if show_countdown && let Some(resets) = five.resets_at {
             let remaining = resets - now;
             let cd = fmt_countdown(remaining);
             segment.push_str(&format!("{FG_MAGENTA} {cd}{RST} "));
@@ -43,9 +41,7 @@ pub fn render_parts(ctx: &RenderContext, bc: &BlockConfig) -> Vec<BlockPart> {
         let bar = progress_bar(pct_int, bar_width);
         let mut segment = String::new();
 
-        if show_countdown
-            && let Some(resets) = seven.resets_at
-        {
+        if show_countdown && let Some(resets) = seven.resets_at {
             let remaining = resets - now;
             let cd = fmt_countdown(remaining);
             segment.push_str(&format!("{FG_MAGENTA} {cd}{RST} "));

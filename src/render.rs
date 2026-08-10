@@ -1,4 +1,4 @@
-use crate::blocks::{render_block, RenderContext};
+use crate::blocks::{RenderContext, render_block};
 use crate::config::Config;
 use crate::style::{DIM, RST};
 
