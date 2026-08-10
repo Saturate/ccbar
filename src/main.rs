@@ -6,7 +6,7 @@ mod render;
 mod status;
 mod style;
 
-use blocks::{collect_git_info, RenderContext};
+use blocks::{RenderContext, collect_git_info};
 
 fn main() {
     match cli::parse_args() {
