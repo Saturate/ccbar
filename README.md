@@ -152,6 +152,7 @@ opus 4.6/1M
 
 Color by model family:
 - Opus — magenta
+- Fable — yellow
 - Sonnet — cyan
 - Haiku — green
 
