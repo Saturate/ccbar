@@ -35,7 +35,7 @@ impl Default for Separator {
     }
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Clone)]
 #[allow(dead_code)]
 pub struct BlockConfig {
     pub width: Option<usize>,
@@ -49,6 +49,12 @@ pub struct BlockConfig {
     pub abbreviate_home: Option<bool>,
     pub format: Option<String>,
     pub currency: Option<String>,
+    pub window_secs: Option<u64>,
+    pub unit: Option<String>,
+    pub scope: Option<String>,
+    pub show_projection: Option<bool>,
+    pub notify: Option<bool>,
+    pub notify_cooldown_secs: Option<u64>,
     pub parts: Option<Vec<String>>,
     pub colors: Option<HashMap<String, String>>,
 }
@@ -156,6 +162,33 @@ crit = 35.0
     }
 
     #[test]
+    fn burn_config_parses() {
+        let toml = r#"
+[[lines]]
+blocks = ["burn"]
+
+[blocks.burn]
+window_secs = 120
+unit = "cost"
+scope = "session"
+show_projection = false
+notify = true
+notify_cooldown_secs = 600
+warn = 0.05
+crit = 0.15
+"#;
+        let cfg: Config = toml::from_str(toml).unwrap();
+        let b = cfg.blocks.get("burn").unwrap();
+        assert_eq!(b.window_secs, Some(120));
+        assert_eq!(b.unit.as_deref(), Some("cost"));
+        assert_eq!(b.scope.as_deref(), Some("session"));
+        assert_eq!(b.show_projection, Some(false));
+        assert_eq!(b.notify, Some(true));
+        assert_eq!(b.notify_cooldown_secs, Some(600));
+        assert_eq!(b.warn, Some(0.05));
+    }
+
+    #[test]
     fn custom_separator() {
         let toml = r#"
 [separator]
@@ -257,4 +290,21 @@ bar_width = 8
 [blocks.dir]
 segments = 0
 abbreviate_home = true
+
+# Burn rate (velocity). Not in [[lines]] by default — add "burn" to a line to show it.
+# Account-wide by default: sums every active session over the window.
+[blocks.burn]
+window_secs = 300
+unit = "tok/m"          # tok/m | tok/s | cost | tok/turn
+scope = "account"       # account | project | session
+show_projection = true  # 5h-cap ETA from used_percentage velocity
+# warn/crit default per unit: tok/m 3000/6000, tok/s 50/100, cost 0.05/0.15,
+# tok/turn 1500/4000. Uncomment to override, in the chosen unit.
+# warn = 3000
+# crit = 6000
+notify = false          # opt-in OS notification when on pace to exceed the 5h limit
+notify_cooldown_secs = 900
+
+# Prompt cache: time left before expiry + session cache hit ratio, from stdin
+# prompt_cache. Add "cache" to a [[lines]] entry to show it; parts: state, ratio.
 "#;

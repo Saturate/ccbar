@@ -2,6 +2,8 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Default)]
 pub struct StatusJSON {
+    pub session_id: Option<String>,
+    pub transcript_path: Option<String>,
     #[serde(default)]
     pub workspace: Workspace,
     #[serde(default)]
@@ -10,6 +12,21 @@ pub struct StatusJSON {
     pub context_window: ContextWindow,
     pub cost: Option<Cost>,
     pub rate_limits: Option<RateLimits>,
+    pub prompt_cache: Option<PromptCache>,
+}
+
+/// Main-conversation prompt cache state, sent by Claude Code v2.1.251+ after
+/// the first API response. Timestamps are epoch seconds.
+#[derive(Deserialize)]
+pub struct PromptCache {
+    pub warm: Option<bool>,
+    /// false means caching is off, or the provider doesn't report it.
+    pub caching_observed: Option<bool>,
+    /// "5m" or "1h".
+    pub ttl: Option<String>,
+    pub expires_at: Option<i64>,
+    /// Session-wide cache reads over all input, 0 to 1.
+    pub hit_ratio: Option<f64>,
 }
 
 #[derive(Deserialize, Default)]
@@ -58,12 +75,25 @@ pub struct Cost {
 pub struct RateLimits {
     pub five_hour: Option<RateWindow>,
     pub seven_day: Option<RateWindow>,
+    pub spend_limit: Option<SpendLimit>,
 }
 
 #[derive(Deserialize)]
 pub struct RateWindow {
     pub used_percentage: Option<f64>,
     pub resets_at: Option<i64>,
+}
+
+/// Only sent behind a Claude apps gateway with spend limits. The USD fields
+/// arrive on a slower poll than `used_percentage`, so they can be absent
+/// even when the object is present.
+#[derive(Deserialize)]
+pub struct SpendLimit {
+    pub used_percentage: Option<f64>,
+    pub resets_at: Option<i64>,
+    pub used_usd: Option<f64>,
+    pub limit_usd: Option<f64>,
+    pub period: Option<String>,
 }
 
 impl StatusJSON {

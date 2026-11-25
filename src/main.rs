@@ -1,7 +1,9 @@
 mod blocks;
 mod cli;
+mod clock;
 mod config;
 mod currency;
+mod fsutil;
 mod render;
 mod status;
 mod style;
@@ -24,6 +26,10 @@ fn main() {
         }
         cli::Action::Docs => {
             cli::run_docs();
+            return;
+        }
+        cli::Action::Burn => {
+            blocks::burn::run_debug();
             return;
         }
         cli::Action::Version => {
