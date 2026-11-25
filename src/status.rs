@@ -58,12 +58,25 @@ pub struct Cost {
 pub struct RateLimits {
     pub five_hour: Option<RateWindow>,
     pub seven_day: Option<RateWindow>,
+    pub spend_limit: Option<SpendLimit>,
 }
 
 #[derive(Deserialize)]
 pub struct RateWindow {
     pub used_percentage: Option<f64>,
     pub resets_at: Option<i64>,
+}
+
+/// Only sent behind a Claude apps gateway with spend limits. The USD fields
+/// arrive on a slower poll than `used_percentage`, so they can be absent
+/// even when the object is present.
+#[derive(Deserialize)]
+pub struct SpendLimit {
+    pub used_percentage: Option<f64>,
+    pub resets_at: Option<i64>,
+    pub used_usd: Option<f64>,
+    pub limit_usd: Option<f64>,
+    pub period: Option<String>,
 }
 
 impl StatusJSON {

@@ -41,7 +41,7 @@ pub fn valid_parts(block_name: &str) -> Option<&'static [&'static str]> {
         "context-bar" => Some(&["label", "bar", "pct"]),
         "tokens" => Some(&["input", "output"]),
         "duration" => Some(&["days", "hours", "minutes", "seconds"]),
-        "rate-limit" => Some(&["5h", "7d"]),
+        "rate-limit" => Some(&["5h", "7d", "spend"]),
         _ => None,
     }
 }

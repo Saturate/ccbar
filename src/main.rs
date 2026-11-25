@@ -1,7 +1,9 @@
 mod blocks;
 mod cli;
+mod clock;
 mod config;
 mod currency;
+mod fsutil;
 mod render;
 mod status;
 mod style;

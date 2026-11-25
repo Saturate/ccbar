@@ -270,7 +270,20 @@ bar_width = 8           # bar width in characters
 
 Bar color follows the same thresholds as context-bar (green → yellow → orange → red).
 
-Parts: `5h`, `7d`
+When the 5-hour or 7-day window reaches 100%, a spend-limit segment is appended (countdown to period reset, spend in USD, percentage, period initial). It also shows on its own when no 5h/7d windows are sent. Claude Code only sends `rate_limits.spend_limit` behind a Claude apps gateway with spend limits; the dollar amounts arrive on a ~5 minute poll, so until then only the percentage is shown.
+
+```
+ 2h13m ━━━━━━━━ 100%   2d7h ━━━━┄┄┄┄ 60%   10d10h ━━━━┄┄┄┄ $314.12/$500 62%/m
+```
+
+Claude Code sends `rate_limits` only after a session's first response. Until
+then, a tab shows the values another tab last saw, marked with a dim `*`. Those
+values come from a shared cache in `~/.cache/ccbar/`, kept separately for each
+`CLAUDE_CONFIG_DIR`. Windows past their reset time are dropped, and nothing is
+shown once the cached values have gone an hour without changing, since usage on
+other devices doesn't reach this cache.
+
+Parts: `5h`, `7d`, `spend`
 
 ## CLI
 

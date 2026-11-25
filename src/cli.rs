@@ -129,7 +129,12 @@ Session duration. Auto-scales from seconds to days.
   show_countdown = true
   show_bar = true
   bar_width = 8
-  parts: 5h, 7d (default: all)
+  parts: 5h, 7d, spend (default: all)
+  spend (gateway spend limit) shows only once a 5h/7d window is at 100%, or
+  when no 5h/7d windows are sent. Before a session's first response, the block
+  shows the values another tab last saw, marked with a dim *. That shared cache
+  is kept per CLAUDE_CONFIG_DIR, drops windows past their reset, and is ignored
+  once its values have gone an hour without changing.
 
 ## Parts (sub-block composition)
 
