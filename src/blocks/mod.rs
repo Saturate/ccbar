@@ -1,4 +1,5 @@
 pub mod burn;
+pub mod cache;
 pub mod context_bar;
 pub mod cost;
 pub mod dir;
@@ -43,6 +44,7 @@ pub fn valid_parts(block_name: &str) -> Option<&'static [&'static str]> {
         "tokens" => Some(&["input", "output"]),
         "duration" => Some(&["days", "hours", "minutes", "seconds"]),
         "rate-limit" => Some(&["5h", "7d", "spend"]),
+        "cache" => Some(&["state", "ratio"]),
         _ => None,
     }
 }
@@ -78,6 +80,7 @@ pub fn render_block(name: &str, ctx: &RenderContext) -> Option<String> {
         "burn" => burn::render(ctx, bc)
             .map(|s| vec![("burn", s)])
             .unwrap_or_default(),
+        "cache" => cache::render_parts(ctx, bc),
         _ => return None,
     };
 

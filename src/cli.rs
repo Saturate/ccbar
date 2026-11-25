@@ -175,6 +175,17 @@ shows a dimmed zero when idle (no movement over the window).
 
   Debug without editing your statusline: `ccbar --burn`.
 
+### cache
+Prompt cache state for the main conversation: time left before the cache
+expires, and the session's cache hit ratio. Not in [[lines]] by default. Shows
+\"cache cold\" once expired, meaning the next message re-caches the whole
+context at full input price.
+  Reads stdin `prompt_cache` (Claude Code v2.1.251+): warm, expires_at, ttl,
+  hit_ratio. Yellow in the last fifth of the TTL. Hidden before the first
+  response and when caching is off. Claude Code re-runs the statusline at
+  expires_at, so it turns cold on time even without refreshInterval.
+  parts: state, ratio (default: all)
+
 ## Parts (sub-block composition)
 
 Any multi-part block supports filtering and reordering via `parts`:

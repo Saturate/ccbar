@@ -12,6 +12,21 @@ pub struct StatusJSON {
     pub context_window: ContextWindow,
     pub cost: Option<Cost>,
     pub rate_limits: Option<RateLimits>,
+    pub prompt_cache: Option<PromptCache>,
+}
+
+/// Main-conversation prompt cache state, sent by Claude Code v2.1.251+ after
+/// the first API response. Timestamps are epoch seconds.
+#[derive(Deserialize)]
+pub struct PromptCache {
+    pub warm: Option<bool>,
+    /// false means caching is off, or the provider doesn't report it.
+    pub caching_observed: Option<bool>,
+    /// "5m" or "1h".
+    pub ttl: Option<String>,
+    pub expires_at: Option<i64>,
+    /// Session-wide cache reads over all input, 0 to 1.
+    pub hit_ratio: Option<f64>,
 }
 
 #[derive(Deserialize, Default)]

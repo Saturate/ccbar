@@ -353,6 +353,27 @@ ccbar --burn
 # account: 62.0k tok/m · $0.08/m · 3 session(s) · 5h cap ~22m (before reset!)
 ```
 
+### cache
+
+Prompt cache state for the main conversation: time left before the cache
+expires, and the session's cache hit ratio. Once it shows `cache cold`, the next
+message writes the whole context to cache again at full input price.
+
+Not in the default lines; add `"cache"` to a `[[lines]]` to show it.
+
+```
+cache 42m 91%
+```
+
+Reads the `prompt_cache` object Claude Code sends on stdin (v2.1.251 or later):
+`warm`, `expires_at`, `ttl` and `hit_ratio`. The time left counts down from
+`expires_at`; it turns yellow in the last fifth of the TTL. The ratio is cache
+reads as a share of all input tokens this session. The block hides before the
+first response and when Claude Code reports that caching is off. Subagent
+requests are not counted, matching Claude Code.
+
+Parts: `state`, `ratio`
+
 ## CLI
 
 ```

@@ -304,4 +304,7 @@ show_projection = true  # 5h-cap ETA from used_percentage velocity
 # crit = 6000
 notify = false          # opt-in OS notification when on pace to exceed the 5h limit
 notify_cooldown_secs = 900
+
+# Prompt cache: time left before expiry + session cache hit ratio, from stdin
+# prompt_cache. Add "cache" to a [[lines]] entry to show it; parts: state, ratio.
 "#;
