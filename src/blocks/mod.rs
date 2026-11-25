@@ -1,3 +1,4 @@
+pub mod burn;
 pub mod context_bar;
 pub mod cost;
 pub mod dir;
@@ -74,6 +75,9 @@ pub fn render_block(name: &str, ctx: &RenderContext) -> Option<String> {
         "cost" => cost::render_parts(ctx, bc),
         "duration" => duration::render_parts(ctx, bc),
         "rate-limit" => rate_limit::render_parts(ctx, bc),
+        "burn" => burn::render(ctx, bc)
+            .map(|s| vec![("burn", s)])
+            .unwrap_or_default(),
         _ => return None,
     };
 

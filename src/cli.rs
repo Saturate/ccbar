@@ -9,6 +9,7 @@ pub enum Action {
     Setup { force: bool },
     Validate,
     Docs,
+    Burn,
     Version,
     Help,
 }
@@ -22,6 +23,7 @@ pub fn parse_args() -> Action {
             "--setup" => return Action::Setup { force: has_force },
             "--validate" => return Action::Validate,
             "--docs" => return Action::Docs,
+            "--burn" => return Action::Burn,
             "--version" => return Action::Version,
             "--help" | "-h" => return Action::Help,
             _ => {}
@@ -41,6 +43,7 @@ USAGE
     ccbar --init            Write default config to ~/.config/ccbar/config.toml
     ccbar --validate        Check config syntax, report line/block counts
     ccbar --docs            Print config reference (for Claude Code context)
+    ccbar --burn            Print account-wide burn rate from cache (debug)
     ccbar --version         Print version
     ccbar --help, -h        Show this help
 
@@ -135,6 +138,42 @@ Session duration. Auto-scales from seconds to days.
   shows the values another tab last saw, marked with a dim *. That shared cache
   is kept per CLAUDE_CONFIG_DIR, drops windows past their reset, and is ignored
   once its values have gone an hour without changing.
+
+### burn
+Burn RATE (velocity): how fast tokens/cost are being spent, plus an optional
+projection of when the shared 5-hour limit will be hit. Not in [[lines]] by
+default — add \"burn\" to a line to show it. Hides during warm-up (<2 samples);
+shows a dimmed zero when idle (no movement over the window).
+  window_secs = 300       # rolling window the rate is measured over
+  unit = \"tok/m\"          # tok/m | tok/s | cost ($/m) | tok/turn
+  scope = \"account\"       # account (sum all sessions) | project | session
+  show_projection = true  # \"5h cap ~38m\", red when on pace to exceed before reset
+  # warn/crit default per unit: tok/m 3000/6000, tok/s 50/100,
+  # cost 0.05/0.15 ($/m), tok/turn 1500/4000. Set them in the chosen unit.
+  # warn = 3000
+  # crit = 6000
+  notify = false          # opt-in OS notification (macOS/Linux) on 5h-cap risk
+  notify_cooldown_secs = 900
+
+  Token/cost burn is per the chosen scope; the 5h-cap projection reads the
+  account's shared percentage as this tab last received it, so an idle tab
+  shows the reset countdown instead. `ccbar --burn` takes the soonest
+  projection from any tab. window_secs is clamped to 30..3600.
+
+  TOKEN SOURCE: token burn counts OUTPUT (generation) tokens; cache reads repeat
+  per message and input spikes on cache-miss, so neither tracks real spend.
+  Output tokens are read live from the session transcript (transcript_path),
+  each message id counted once, so burn tracks mid-turn. Without a transcript
+  the token units hide (stdin's total_output_tokens is the last response only).
+  COST comes from stdin's running total, so the \"cost\" unit works without a
+  transcript, but moves only when stdin's total_cost_usd does. tok/turn shows
+  the output of the most recent response.
+
+  LIMITATION: subagent (Task) usage lives in separate transcript files and is NOT
+  counted here, so a deep-research fan-out is still under-reported live. Catching
+  that needs a hook-based plugin consuming SubagentStop, not the statusline.
+
+  Debug without editing your statusline: `ccbar --burn`.
 
 ## Parts (sub-block composition)
 

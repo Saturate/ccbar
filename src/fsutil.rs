@@ -33,6 +33,19 @@ pub fn write_atomic<T: Serialize>(path: &Path, value: &T) {
     }
 }
 
+/// Keeps file names to a safe charset for ids that come from stdin.
+pub fn sanitize(id: &str) -> String {
+    id.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
 /// FNV-1a: a stable hash for cache file names. std's hasher may change
 /// between Rust releases, which would orphan cache files on upgrade.
 pub fn stable_hash(s: &str) -> u64 {
@@ -65,7 +78,8 @@ mod tests {
     }
 
     #[test]
-    fn hash_is_stable() {
+    fn sanitize_and_hash_are_stable() {
+        assert_eq!(sanitize("a/b c-1"), "a_b_c-1");
         assert_eq!(stable_hash(""), 0xcbf29ce484222325);
         assert_eq!(stable_hash("/x"), stable_hash("/x"));
         assert_ne!(stable_hash("/x"), stable_hash("/y"));

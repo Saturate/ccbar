@@ -285,6 +285,74 @@ other devices doesn't reach this cache.
 
 Parts: `5h`, `7d`, `spend`
 
+### burn
+
+Burn **rate** (velocity): how fast tokens or cost are being spent, plus an
+optional prediction of when the shared 5-hour limit will be hit. Complements
+`rate-limit`, which shows how full the bucket is but not how fast it is filling.
+
+Not in the default lines — add `"burn"` to a `[[lines]]` to show it. It hides
+during warm-up (fewer than 2 samples) and shows a dimmed `↑ 0/m` when idle (no
+movement over the window).
+
+```toml
+[blocks.burn]
+window_secs = 300        # rolling window the rate is measured over
+unit = "tok/m"           # tok/m | tok/s | cost ($/m) | tok/turn
+scope = "account"        # account (sum all sessions) | project | session
+show_projection = true   # "5h cap ~38m", red when on pace to exceed before reset
+# warn/crit default per unit: tok/m 3000/6000, tok/s 50/100,
+# cost 0.05/0.15 ($/m), tok/turn 1500/4000. Set them in the chosen unit.
+# warn = 3000
+# crit = 6000
+notify = false           # opt-in OS notification (macOS/Linux) on 5h-cap risk
+notify_cooldown_secs = 900
+```
+
+```
+↑ 4.2k/m · 5h cap ~38m
+```
+
+How it tracks: each session keeps a small rolling sample buffer in
+`~/.cache/ccbar/burn-<session_id>.json`. Account scope sums every active
+session's windowed delta; a closed session ages out of the window and drops to
+zero on its own. Writes are atomic, so multiple windows never corrupt the files.
+
+**Token source.** Token burn counts **output (generation) tokens**. Cache reads
+repeat on every message within a turn and input spikes on a cache miss, so
+neither reflects real spend; output is the signal that does. Output tokens are
+read live from the session transcript (`transcript_path`), so burn tracks
+**mid-turn** instead of waiting for the turn to finish. Claude Code writes one
+transcript line per content block, each repeating the response's usage, so each
+message id is counted once. stdin has no running output total
+(`total_output_tokens` is the last response only), so without a transcript the
+token units hide. **Cost** comes from stdin's running total, so the `cost` unit
+works without a transcript, but it moves only when stdin's `total_cost_usd`
+does, not mid-response. `tok/turn` shows the output of the most recent response.
+
+**5h-cap projection** measures the velocity of the account's shared
+`used_percentage` bucket as this tab last received it (not this session's
+tokens), so an idle tab shows the reset countdown instead; `ccbar --burn` takes
+the soonest projection from any tab. It projects when the bucket reaches 100%
+and compares that with the reset time. The percentage arrives in whole
+points, so it waits until the samples cover half the window before projecting.
+With `notify = true`, at most one OS notification fires per cooldown across all
+windows while you are on a pace that exhausts the bucket before it resets.
+Sessions that haven't rendered for 30 seconds (closed or suspended tabs) drop
+out of the account and project totals.
+
+**Limitation.** Subagent (Task) usage lives in separate transcript files and is
+**not** counted here, so a deep-research fan-out is still under-reported live.
+Catching that needs a hook-based plugin consuming `SubagentStop`, not the
+statusline.
+
+Debug the account-wide figure without touching your statusline config:
+
+```
+ccbar --burn
+# account: 62.0k tok/m · $0.08/m · 3 session(s) · 5h cap ~22m (before reset!)
+```
+
 ## CLI
 
 ```
@@ -293,6 +361,7 @@ ccbar --setup      # add statusLine to ~/.claude/settings.json
 ccbar --init       # write default config to ~/.config/ccbar/config.toml
 ccbar --validate   # check config syntax, report line/block counts
 ccbar --docs       # print config reference (for Claude Code context)
+ccbar --burn       # print account-wide burn rate from cache (debug)
 ccbar --version    # print version
 ccbar --help       # show help
 ```

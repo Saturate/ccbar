@@ -28,6 +28,10 @@ fn main() {
             cli::run_docs();
             return;
         }
+        cli::Action::Burn => {
+            blocks::burn::run_debug();
+            return;
+        }
         cli::Action::Version => {
             cli::run_version();
             return;

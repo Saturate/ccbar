@@ -2,6 +2,8 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Default)]
 pub struct StatusJSON {
+    pub session_id: Option<String>,
+    pub transcript_path: Option<String>,
     #[serde(default)]
     pub workspace: Workspace,
     #[serde(default)]
