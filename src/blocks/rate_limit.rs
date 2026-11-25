@@ -118,6 +118,12 @@ fn merge(old: CachedLimits, new: CachedLimits, now: i64) -> CachedLimits {
         (false, true) => n,
         (false, false) => o,
     };
+    // Spend only grows within a period, so an idle tab's older figure must not
+    // replace a higher cached one (same rule as the percentages).
+    let used = match (same_period, new.spend_used_usd, old.spend_used_usd) {
+        (true, Some(n), Some(o)) => Some(n.max(o)),
+        _ => pick(new.spend_used_usd, old.spend_used_usd),
+    };
     let spend_period = match (same_period, spend_from_new) {
         (true, _) => new.spend_period.or(old.spend_period.clone()),
         (false, true) => new.spend_period,
@@ -131,7 +137,7 @@ fn merge(old: CachedLimits, new: CachedLimits, now: i64) -> CachedLimits {
         seven_resets,
         spend_pct,
         spend_resets,
-        spend_used_usd: pick(new.spend_used_usd, old.spend_used_usd),
+        spend_used_usd: used,
         spend_limit_usd: pick(new.spend_limit_usd, old.spend_limit_usd),
         spend_period,
     };
@@ -417,6 +423,26 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(merge(old, new, 1500).five_pct, Some(2.0));
+    }
+
+    #[test]
+    fn idle_tab_cannot_lower_cached_spend() {
+        let cached = CachedLimits {
+            spend_pct: Some(80.0),
+            spend_resets: Some(9000),
+            spend_used_usd: Some(400.0),
+            spend_limit_usd: Some(500.0),
+            ..Default::default()
+        };
+        let idle = CachedLimits {
+            spend_pct: Some(20.0),
+            spend_resets: Some(9000),
+            spend_used_usd: Some(100.0),
+            spend_limit_usd: Some(500.0),
+            ..Default::default()
+        };
+        let m = merge(cached, idle, 2000);
+        assert_eq!((m.spend_pct, m.spend_used_usd), (Some(80.0), Some(400.0)));
     }
 
     #[test]

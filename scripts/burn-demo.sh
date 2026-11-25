@@ -49,9 +49,9 @@ step "t=1000 warm-up (1 sample):"      1000 0     0.05 40 8000
 step "t=1015 first rate (burst):"      1015 2500  0.45 47 8000
 step "t=1100 rate continues:"          1100 4000  0.95 55 8000
 step "t=1400 idle (no movement):"      1400 0     0.95 55 8000
-step "t=1430 fresh burst + 5h risk:"   1430 6000  1.40 70 8000
+step "t=1580 fresh burst + 5h risk:"   1580 6000  1.40 70 8000
 echo
 echo "account-wide debug view:"
-CCBAR_NOW_SECS=1430 "$BIN" --burn
+CCBAR_NOW_SECS=1580 "$BIN" --burn
 echo
 echo "(a blank render is the block hiding during warm-up)"

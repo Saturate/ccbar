@@ -99,9 +99,20 @@ pub fn session_rate(samples: &[Sample], now: i64, window: u64) -> Option<(f64, f
 /// the percentage reflects the shared bucket, not this session's tokens.
 pub fn project_pct(samples: &[Sample], now: i64, window: u64) -> Option<Projection> {
     let cutoff = now - window as i64;
+    // Percentages from before a 5h reset belong to another bucket; mixing them
+    // in would project from the old window's climb.
+    let current_reset = samples
+        .iter()
+        .rev()
+        .find(|s| s.pct5h.is_some())
+        .and_then(|s| s.resets_at);
+    let same_bucket = |s: &Sample| match (s.resets_at, current_reset) {
+        (Some(a), Some(b)) => a.abs_diff(b) <= 60,
+        (a, b) => a == b,
+    };
     let win: Vec<&Sample> = samples
         .iter()
-        .filter(|s| s.ts >= cutoff && s.pct5h.is_some())
+        .filter(|s| s.ts >= cutoff && s.pct5h.is_some() && same_bucket(s))
         .collect();
     if win.len() < 2 {
         return None;
@@ -122,7 +133,9 @@ pub fn project_pct(samples: &[Sample], now: i64, window: u64) -> Option<Projecti
         return None;
     }
     let resets_at = last.resets_at?;
-    let eta_to_100 = ((100.0 - p1) / pct_rate) as i64;
+    // Measured from now: the newest sample with a percentage can be older than
+    // this render when later renders carried no rate limits.
+    let eta_to_100 = ((100.0 - p1) / pct_rate) as i64 - now.saturating_sub(last.ts).max(0);
     let time_to_reset = resets_at.saturating_sub(now);
     Some(Projection {
         eta_to_100,
@@ -689,6 +702,21 @@ mod tests {
     fn projection_hides_when_not_rising() {
         let samples = vec![sp(0, 50.0, 600), sp(60, 50.0, 600)];
         assert!(project_pct(&samples, 60, 120).is_none());
+    }
+
+    #[test]
+    fn projection_ignores_previous_reset_window() {
+        let samples = vec![sp(1000, 10.0, 1100), sp(1150, 20.0, 19100)];
+        assert!(project_pct(&samples, 1150, 300).is_none());
+    }
+
+    #[test]
+    fn projection_eta_counts_from_now() {
+        // 90% -> 95% over 150s: cap 150s after the last sample, at 1300.
+        let samples = vec![sp(1000, 90.0, 1400), sp(1150, 95.0, 1400)];
+        let p = project_pct(&samples, 1250, 300).unwrap();
+        assert_eq!(p.eta_to_100, 50);
+        assert!(p.on_pace_to_exceed);
     }
 
     #[test]
